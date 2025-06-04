@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Red de Conexiones Animada</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a0a;
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
+        }
+
+        #canvas {
+            display: block;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+        }
+
+        .content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .content h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, #00ffff, #ff00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        .content p {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid #00ffff;
+            color: #00ffff;
+            text-decoration: none;
+            border-radius: 30px;
+            transition: all 0.3s ease;
+            pointer-events: all;
+        }
+
+        .btn:hover {
+            background: rgba(0, 255, 255, 0.2);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            }
+            to {
+                text-shadow: 0 0 30px rgba(255, 0, 255, 0.8);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .content h1 {
+                font-size: 2rem;
+            }
+            .content p {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    
+    <div class="content">
+        <h1>Red Neural</h1>
+        <p>Conexiones infinitas en el espacio digital</p>
+        <a href="#" class="btn">Explorar</a>
+    </div>
+
+    <script>
+        class NetworkBackground {
+            constructor() {
+                this.canvas = document.getElementById('canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.nodes = [];
+                this.connections = [];
+                this.mouse = { x: 0, y: 0 };
+                this.nodeCount = 60;
+                this.maxDistance = 120;
+                
+                this.init();
+                this.bindEvents();
+                this.animate();
+            }
+
+            init() {
+                this.resize();
+                this.createNodes();
+            }
+
+            resize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            }
+
+            createNodes() {
+                this.nodes = [];
+                const colors = ['#ffffff', '#00ffff', '#ff00ff', '#ff0000', '#00ff00'];
+                
+                for (let i = 0; i < this.nodeCount; i++) {
+                    this.nodes.push({
+                        x: Math.random() * this.canvas.width,
+                        y: Math.random() * this.canvas.height,
+                        vx: (Math.random() - 0.5) * 0.5,
+                        vy: (Math.random() - 0.5) * 0.5,
+                        radius: Math.random() * 3 + 2,
+                        color: colors[Math.floor(Math.random() * colors.length)],
+                        opacity: Math.random() * 0.5 + 0.5
+                    });
+                }
+            }
+
+            updateNodes() {
+                this.nodes.forEach(node => {
+                    node.x += node.vx;
+                    node.y += node.vy;
+
+                    // Rebote en los bordes
+                    if (node.x <= 0 || node.x >= this.canvas.width) {
+                        node.vx *= -1;
+                    }
+                    if (node.y <= 0 || node.y >= this.canvas.height) {
+                        node.vy *= -1;
+                    }
+
+                    // Mantener dentro de los límites
+                    node.x = Math.max(0, Math.min(this.canvas.width, node.x));
+                    node.y = Math.max(0, Math.min(this.canvas.height, node.y));
+
+                    // Efecto del mouse
+                    const mouseDistance = Math.sqrt(
+                        Math.pow(node.x - this.mouse.x, 2) + 
+                        Math.pow(node.y - this.mouse.y, 2)
+                    );
+
+                    if (mouseDistance < 100) {
+                        const force = (100 - mouseDistance) / 100;
+                        const angle = Math.atan2(node.y - this.mouse.y, node.x - this.mouse.x);
+                        node.vx += Math.cos(angle) * force * 0.01;
+                        node.vy += Math.sin(angle) * force * 0.01;
+                    }
+
+                    // Fricción
+                    node.vx *= 0.99;
+                    node.vy *= 0.99;
+                });
+            }
+
+            drawNodes() {
+                this.ctx.globalAlpha = 1;
+                this.nodes.forEach(node => {
+                    this.ctx.beginPath();
+                    this.ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
+                    this.ctx.fillStyle = node.color;
+                    this.ctx.fill();
+                    
+                    // Efecto de brillo
+                    this.ctx.beginPath();
+                    this.ctx.arc(node.x, node.y, node.radius + 2, 0, Math.PI * 2);
+                    this.ctx.fillStyle = node.color + '40';
+                    this.ctx.fill();
+                });
+            }
+
+            drawConnections() {
+                this.ctx.globalAlpha = 1;
+                for (let i = 0; i < this.nodes.length; i++) {
+                    for (let j = i + 1; j < this.nodes.length; j++) {
+                        const distance = Math.sqrt(
+                            Math.pow(this.nodes[i].x - this.nodes[j].x, 2) + 
+                            Math.pow(this.nodes[i].y - this.nodes[j].y, 2)
+                        );
+
+                        if (distance < this.maxDistance) {
+                            const opacity = (1 - (distance / this.maxDistance)) * 0.5;
+                            
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(this.nodes[i].x, this.nodes[i].y);
+                            this.ctx.lineTo(this.nodes[j].x, this.nodes[j].y);
+                            this.ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
+                            this.ctx.lineWidth = 0.5;
+                            this.ctx.stroke();
+                        }
+                    }
+                }
+            }
+
+            bindEvents() {
+                window.addEventListener('resize', () => {
+                    this.resize();
+                    this.createNodes();
+                });
+
+                this.canvas.addEventListener('mousemove', (e) => {
+                    this.mouse.x = e.clientX;
+                    this.mouse.y = e.clientY;
+                });
+
+                this.canvas.addEventListener('mouseleave', () => {
+                    this.mouse.x = -100;
+                    this.mouse.y = -100;
+                });
+            }
+
+            animate() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                this.ctx.globalAlpha = 1;
+                
+                this.updateNodes();
+                this.drawConnections();
+                this.drawNodes();
+                
+                requestAnimationFrame(() => this.animate());
+            }
+        }
+
+        // Inicializar cuando la página cargue
+        window.addEventListener('load', () => {
+            new NetworkBackground();
+        });
+    </script>
+</body>
+</html>
