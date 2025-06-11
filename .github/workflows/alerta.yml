@@ -1,0 +1,29 @@
+name: Notificar a ntfy.sh
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  notificar:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clonar repositorio
+        uses: actions/checkout@v3
+
+      - name: Instalar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Ejecutar hola.py y guardar salida
+        id: ejecutar_hola
+        run: |
+          MENSAJE=$(python hola.py)
+          echo "mensaje_salida=$MENSAJE" >> $GITHUB_OUTPUT
+
+      - name: Enviar notificación a ntfy.sh con salida
+        run: |
+          curl -d "🚨 Push a main ejecutado. Salida de hola.py: ${{ steps.ejecutar_hola.outputs.mensaje_salida }}" https://ntfy.sh/devops-itla
