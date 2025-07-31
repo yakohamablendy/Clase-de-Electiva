@@ -1,0 +1,41 @@
+name: Notificar a ntfy.sh
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  notificar:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clonar repositorio
+        uses: actions/checkout@v3
+
+      - name: Instalar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Ejecutar hola.py y capturar salida
+        id: ejecutar_hola
+        run: |
+          set +e  # No fallar el paso si hay error
+          MENSAJE=$(python src/hola.py 2>&1)
+          STATUS=$?
+          echo "mensaje_salida=$MENSAJE" >> $GITHUB_OUTPUT
+          echo "codigo_salida=$STATUS" >> $GITHUB_OUTPUT
+
+      - name: Enviar notificación a ntfy.sh con emoji dinámico
+        run: |
+          SALIDA="${{ steps.ejecutar_hola.outputs.mensaje_salida }}"
+          STATUS="${{ steps.ejecutar_hola.outputs.codigo_salida }}"
+
+          if [ "$STATUS" -eq 0 ]; then
+            EMOJI="✅"
+          else
+            EMOJI="❌"
+          fi
+
+          curl -d "$EMOJI Push a main ejecutado. Resultado de hola.py: $SALIDA" https://ntfy.sh/devops-itla

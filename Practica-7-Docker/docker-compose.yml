@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  # Servicio de aplicación Python Flask
+  web:
+    build: .
+    container_name: hola_mundo_python
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./src:/app
+    depends_on:
+      - mysql
+    environment:
+      - FLASK_ENV=development
+      - FLASK_DEBUG=1
+    restart: always
+    networks:
+      - hola_mundo_network
+
+  # Servicio de base de datos MySQL
+  mysql:
+    image: mysql:8.0
+    container_name: hola_mundo_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: hola_mundo_db
+      MYSQL_USER: usuario
+      MYSQL_PASSWORD: password123
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - hola_mundo_network
+
+  # Servicio opcional de phpMyAdmin para administrar la BD
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: hola_mundo_phpmyadmin
+    restart: always
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: mysql
+      PMA_USER: usuario
+      PMA_PASSWORD: password123
+    depends_on:
+      - mysql
+    networks:
+      - hola_mundo_network
+
+# Volúmenes para persistir datos
+volumes:
+  mysql_data:
+
+# Red personalizada para que los contenedores se comuniquen
+networks:
+  hola_mundo_network:
+    driver: bridge
