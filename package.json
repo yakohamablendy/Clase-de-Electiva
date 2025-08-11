@@ -1,0 +1,16 @@
+{
+  "name": "hola-mundo-devops",
+  "version": "1.0.0",
+  "description": "Aplicación Hola Mundo para práctica de DevOps",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "node app.js"
+  },
+  "keywords": ["nodejs", "express", "devops", "docker"],
+  "author": "DevOps Student",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
