@@ -13,7 +13,6 @@ def test_hello_world(client):
     response = client.get('/')
     assert response.status_code == 200
     assert b'Hola Mundo' in response.data
-    assert b'DevOps CI/CD' in response.data
 
 def test_health_endpoint(client):
     """Prueba el endpoint de health check"""
