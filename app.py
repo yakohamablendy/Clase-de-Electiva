@@ -7,8 +7,7 @@ def hello_world():
     return '''
     <h1>¡Hola Mundo!</h1>
     <p>Esta es mi aplicación web para la práctica final de DevOps</p>
-    <p>Autor: Tu Nombre</p>
-    <p>Curso: DevOps CI/CD</p>
+    
     '''
 
 @app.route('/health')
